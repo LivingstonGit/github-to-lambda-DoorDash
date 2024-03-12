@@ -7,6 +7,9 @@ def lambda_handler(event, context):
     s3_bucket = event['Records'][0]['s3']['bucket']['name']
     s3_key = event['Records'][0]['s3']['object']['key']
 
+    print("s3_bucket : ",s3_bucket)
+    print("s3_key    : ",s3_key)
+        
     # Generate file paths for input and output
     input_file_path = f'/tmp/{s3_key.split("/")[-1]}'  # Temporary file path in Lambda environment
     output_file_path = f'/tmp/delivered_records.json'  # Temporary file path in Lambda environment
@@ -24,6 +27,8 @@ def lambda_handler(event, context):
 
         # Step 2: Filter records where status is "delivered"
         delivered_records = df[df['status'] == 'delivered']
+        
+        print(" Delivered records",delivered_records)
 
         # Step 3: Write the filtered DataFrame to a new JSON file
         delivered_records.to_json(output_file_path, orient='records')
