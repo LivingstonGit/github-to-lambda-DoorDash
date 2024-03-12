@@ -3,18 +3,10 @@ import pandas as pd
 import boto3
 import os
 
-def print_statement(x):
-    print("Print : ",x)
-
-
 def lambda_handler(event, context):
     # Retrieve S3 bucket and key from the S3 event
     s3_bucket = event['Records'][0]['s3']['bucket']['name']
     s3_key = event['Records'][0]['s3']['object']['key']
-
-    print(s3_bucket)
-    print(s3_key)
-
 
     # Create an S3 client
     s3_client = boto3.client('s3')
@@ -22,15 +14,13 @@ def lambda_handler(event, context):
     try:
         # Step 1: Read the JSON file into a pandas DataFrame directly from S3
         json_data = s3_client.get_object(Bucket=s3_bucket, Key=s3_key)['Body'].read().decode('utf-8')
-        df = pd.read_json(json_data)
+        df = pd.json_normalize(json.loads(json_data))
 
         # Step 2: Filter records where status is "delivered"
         delivered_records = df[df['status'] == 'delivered']
 
         # Step 3: Convert the filtered DataFrame to JSON format
         json_output = delivered_records.to_json(orient='records')
-        
-        print(json_output)
 
         # Step 4: Write the filtered JSON data to a new S3 object in the target bucket
         target_s3_bucket = 'doordash-target-zn-assign3'
